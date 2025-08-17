@@ -1,10 +1,11 @@
 {
   "env": {
-    "account": "YOUR_DEV_ACCOUNT_ID", 
-    "region": "us-east-1"
+    "account": "833896509529",
+    "region": "ap-southeast-1"
   },
   "parameters": {
-    "domainName": "dev.your-domain.com",
-    "vpcCidr": "10.0.0.0/16"
+    "domainName": "mhc-demo.sachintha.dev",
+    "vpcCidr": "10.0.0.0/16",
+    "environment": "dev"
   }
 }
