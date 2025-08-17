@@ -25,7 +25,7 @@ const crisisKeywords = [
   "cant go on",
 ];
 
-// Mental health response templates
+// Mental health response templates with more sophisticated AI-like responses
 const responses = {
   crisis: [
     "I'm very concerned about what you're sharing. Your life has value and you're not alone. Please reach out to emergency services (995) or a trusted person immediately. I'm here to support you.",
@@ -34,18 +34,26 @@ const responses = {
   anxiety: [
     "It sounds like you're experiencing anxiety, which is very common among students. Let's try some breathing exercises together. Take a slow breath in for 4 counts, hold for 4, then out for 4.",
     "Anxiety can feel overwhelming, but there are effective ways to manage it. Have you tried grounding techniques? Try naming 5 things you can see, 4 you can touch, 3 you can hear, 2 you can smell, and 1 you can taste.",
+    "I understand how anxiety can make everything feel overwhelming. Would you like to talk about what's specifically triggering these feelings? Sometimes naming our worries can help reduce their power over us.",
+    "Anxiety often comes with physical symptoms too. Are you noticing any changes in your breathing, heart rate, or muscle tension? Let's work on some techniques to help your body feel calmer.",
   ],
   stress: [
     "Academic stress is very common. Breaking tasks into smaller, manageable parts can help. What specific aspect of your studies is causing you the most stress right now?",
     "Stress can be managed with good techniques. Regular sleep, exercise, and time management can make a big difference. What areas would you like to work on first?",
+    "I hear that you're feeling stressed. That's completely valid given the pressures you're facing. Let's explore some strategies that might help you feel more in control.",
+    "Chronic stress can really take a toll. Have you noticed how stress is affecting your daily life? Your sleep, appetite, or ability to concentrate?",
   ],
   depression: [
     "Thank you for sharing these difficult feelings with me. Depression is treatable, and you don't have to go through this alone. Have you considered speaking with a counselor?",
     "These feelings of sadness are valid, and seeking help shows strength. Small steps like getting outside, staying connected with friends, or maintaining a routine can help.",
+    "Depression can make everything feel heavy and hopeless. I want you to know that these feelings, while very real, don't define your worth or your future. You matter.",
+    "It takes courage to talk about depression. How long have you been feeling this way? Sometimes it helps to track patterns in our mood.",
   ],
   supportive: [
     "Thank you for reaching out. It takes courage to talk about mental health. I'm here to listen and support you.",
     "You've taken an important step by seeking support. Remember that asking for help is a sign of strength, not weakness.",
+    "I'm glad you felt comfortable sharing with me. Everyone's mental health journey is different, and there's no right or wrong way to feel.",
+    "It sounds like you're going through a challenging time. I want you to know that your feelings are valid and that support is available.",
   ],
 };
 
@@ -112,44 +120,177 @@ function detectCrisis(text) {
 function categorizeIntent(text) {
   const lowerText = text.toLowerCase();
 
+  // Crisis detection first (highest priority)
   if (detectCrisis(text)) return "crisis";
-  if (
-    lowerText.includes("anxious") ||
-    lowerText.includes("worry") ||
-    lowerText.includes("panic")
-  )
-    return "anxiety";
-  if (
-    lowerText.includes("stress") ||
-    lowerText.includes("overwhelmed") ||
-    lowerText.includes("pressure")
-  )
-    return "stress";
-  if (
-    lowerText.includes("sad") ||
-    lowerText.includes("depressed") ||
-    lowerText.includes("empty")
-  )
-    return "depression";
 
-  return "supportive";
+  // Anxiety indicators
+  const anxietyKeywords = [
+    "anxious",
+    "anxiety",
+    "worry",
+    "worried",
+    "panic",
+    "nervous",
+    "fear",
+    "scared",
+    "overwhelmed",
+    "racing thoughts",
+    "cant stop thinking",
+    "restless",
+  ];
+  const anxietyScore = anxietyKeywords.filter((keyword) =>
+    lowerText.includes(keyword)
+  ).length;
+
+  // Stress indicators
+  const stressKeywords = [
+    "stress",
+    "stressed",
+    "pressure",
+    "overwhelmed",
+    "deadline",
+    "too much",
+    "cant handle",
+    "burnt out",
+    "exhausted",
+    "tension",
+  ];
+  const stressScore = stressKeywords.filter((keyword) =>
+    lowerText.includes(keyword)
+  ).length;
+
+  // Depression indicators
+  const depressionKeywords = [
+    "sad",
+    "sadness",
+    "depressed",
+    "depression",
+    "empty",
+    "hopeless",
+    "worthless",
+    "lonely",
+    "alone",
+    "no energy",
+    "tired",
+    "nothing matters",
+    "dont care",
+  ];
+  const depressionScore = depressionKeywords.filter((keyword) =>
+    lowerText.includes(keyword)
+  ).length;
+
+  // Return intent with highest score
+  const scores = {
+    anxiety: anxietyScore,
+    stress: stressScore,
+    depression: depressionScore,
+  };
+
+  const maxScore = Math.max(...Object.values(scores));
+  if (maxScore === 0) return "supportive";
+
+  // Return the intent with the highest score
+  return Object.keys(scores).find((key) => scores[key] === maxScore);
 }
 
-function generateResponse(intent, userText) {
+function generateResponse(intent, userText, conversationHistory = []) {
   const responseOptions = responses[intent] || responses.supportive;
-  const randomResponse =
+  let baseResponse =
     responseOptions[Math.floor(Math.random() * responseOptions.length)];
 
-  // Add personalization based on user text
-  if (intent === "anxiety" && userText.toLowerCase().includes("exam")) {
-    return (
-      "Exam anxiety is very common. " +
-      randomResponse +
-      " Remember, your worth isn't determined by test scores."
-    );
+  // Add contextual personalization based on user text
+  const lowerText = userText.toLowerCase();
+
+  if (intent === "anxiety") {
+    if (lowerText.includes("exam") || lowerText.includes("test")) {
+      baseResponse =
+        "Exam anxiety is very common. " +
+        baseResponse +
+        " Remember, your worth isn't determined by test scores.";
+    } else if (lowerText.includes("sleep") || lowerText.includes("night")) {
+      baseResponse =
+        "Anxiety often affects our sleep patterns. " +
+        baseResponse +
+        " Consider creating a calming bedtime routine.";
+    } else if (lowerText.includes("social") || lowerText.includes("people")) {
+      baseResponse =
+        "Social anxiety can feel isolating. " +
+        baseResponse +
+        " Remember, many people feel nervous in social situations.";
+    }
   }
 
-  return randomResponse;
+  if (intent === "stress") {
+    if (lowerText.includes("work") || lowerText.includes("job")) {
+      baseResponse =
+        "Work stress is incredibly common. " +
+        baseResponse +
+        " Setting boundaries between work and personal time is crucial.";
+    } else if (
+      lowerText.includes("deadline") ||
+      lowerText.includes("assignment")
+    ) {
+      baseResponse =
+        "Academic deadlines can feel overwhelming. " +
+        baseResponse +
+        " Try breaking large tasks into smaller, manageable steps.";
+    } else if (
+      lowerText.includes("family") ||
+      lowerText.includes("relationship")
+    ) {
+      baseResponse =
+        "Relationship stress affects us deeply. " +
+        baseResponse +
+        " Communication and boundaries are key to healthy relationships.";
+    }
+  }
+
+  if (intent === "depression") {
+    if (lowerText.includes("tired") || lowerText.includes("energy")) {
+      baseResponse =
+        "Depression often affects our energy levels. " +
+        baseResponse +
+        " Even small activities like a short walk can help.";
+    } else if (lowerText.includes("alone") || lowerText.includes("lonely")) {
+      baseResponse =
+        "Feeling isolated is a common part of depression. " +
+        baseResponse +
+        " Reaching out, even in small ways, can make a difference.";
+    }
+  }
+
+  // Add encouraging follow-up questions
+  const followUpQuestions = {
+    anxiety: [
+      " What usually helps you feel calmer when anxiety strikes?",
+      " Have you noticed any specific triggers for your anxiety?",
+      " Would you like to try a quick grounding exercise together?",
+    ],
+    stress: [
+      " What's one small thing you could do today to reduce your stress?",
+      " How has this stress been affecting your daily routine?",
+      " What support systems do you have in place?",
+    ],
+    depression: [
+      " What activities used to bring you joy?",
+      " How has your sleep and appetite been lately?",
+      " Is there someone in your life you feel comfortable talking to?",
+    ],
+    supportive: [
+      " What brought you here today?",
+      " How have you been taking care of yourself lately?",
+      " What would feeling better look like for you?",
+    ],
+  };
+
+  // Add a follow-up question 30% of the time
+  if (Math.random() < 0.3 && followUpQuestions[intent]) {
+    const questions = followUpQuestions[intent];
+    const question = questions[Math.floor(Math.random() * questions.length)];
+    baseResponse += question;
+  }
+
+  return baseResponse;
 }
 
 async function saveMessageToDb(

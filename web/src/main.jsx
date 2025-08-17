@@ -1,16 +1,40 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  MessageCircle,
+  BarChart3,
+  Calendar,
+  Send,
+  User,
+  LogOut,
+  Heart,
+  Shield,
+  Phone,
+  AlertTriangle,
+  Smile,
+  Meh,
+  Frown,
+  TrendingUp,
+  Clock,
+  CheckCircle,
+  ExternalLink,
+  Menu,
+  X,
+} from "lucide-react";
+import "./styles.css";
 
 // API Configuration
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
-  "https://your-api-gateway-url.execute-api.ap-southeast-1.amazonaws.com/prod";
+  "https://xc0ml0kag0.execute-api.ap-southeast-1.amazonaws.com/prod";
 
-// Mental Health Companion App
+// Enhanced Mental Health Companion App
 function MentalHealthCompanion() {
   const [currentView, setCurrentView] = useState("chat");
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Check for existing session
   useEffect(() => {
@@ -41,136 +65,148 @@ function MentalHealthCompanion() {
     );
   }
 
+  const menuItems = [
+    { id: "chat", label: "Chat", icon: MessageCircle },
+    { id: "dashboard", label: "Dashboard", icon: BarChart3 },
+    { id: "appointments", label: "Appointments", icon: Calendar },
+  ];
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        fontFamily: '"Segoe UI", system-ui, sans-serif',
-      }}
-    >
-      {/* Header */}
-      <header
-        style={{
-          background: "rgba(255, 255, 255, 0.95)",
-          backdropFilter: "blur(10px)",
-          padding: "1rem 2rem",
-          borderBottom: "1px solid rgba(0,0,0,0.1)",
-          boxShadow: "0 2px 20px rgba(0,0,0,0.1)",
-        }}
+    <div className="min-h-screen gradient-bg">
+      {/* Enhanced Header */}
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className="bg-white/95 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50"
       >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            maxWidth: "1200px",
-            margin: "0 auto",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <h1
-              style={{
-                margin: 0,
-                color: "#2d3748",
-                fontSize: "1.5rem",
-                background: "linear-gradient(135deg, #667eea, #764ba2)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <motion.div
+              className="flex items-center space-x-3"
+              whileHover={{ scale: 1.05 }}
             >
-              🧠 MindCare Companion
-            </h1>
-          </div>
-          <nav style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-            <button
-              onClick={() => setCurrentView("chat")}
-              style={{
-                padding: "0.5rem 1rem",
-                border: "none",
-                borderRadius: "20px",
-                background: currentView === "chat" ? "#667eea" : "transparent",
-                color: currentView === "chat" ? "white" : "#4a5568",
-                cursor: "pointer",
-                fontWeight: "500",
-                transition: "all 0.2s",
-              }}
-            >
-              💬 Chat
-            </button>
-            <button
-              onClick={() => setCurrentView("dashboard")}
-              style={{
-                padding: "0.5rem 1rem",
-                border: "none",
-                borderRadius: "20px",
-                background:
-                  currentView === "dashboard" ? "#667eea" : "transparent",
-                color: currentView === "dashboard" ? "white" : "#4a5568",
-                cursor: "pointer",
-                fontWeight: "500",
-                transition: "all 0.2s",
-              }}
-            >
-              📊 Dashboard
-            </button>
-            <button
-              onClick={() => setCurrentView("appointments")}
-              style={{
-                padding: "0.5rem 1rem",
-                border: "none",
-                borderRadius: "20px",
-                background:
-                  currentView === "appointments" ? "#667eea" : "transparent",
-                color: currentView === "appointments" ? "white" : "#4a5568",
-                cursor: "pointer",
-                fontWeight: "500",
-                transition: "all 0.2s",
-              }}
-            >
-              📅 Appointments
-            </button>
-            <div
-              style={{
-                marginLeft: "1rem",
-                padding: "0.5rem 1rem",
-                background: "rgba(102, 126, 234, 0.1)",
-                borderRadius: "20px",
-                fontSize: "0.9rem",
-                color: "#4a5568",
-              }}
-            >
-              👋 Hi, {user?.name || "User"}
+              <div className="w-10 h-10 bg-gradient-to-r from-mindcare-light to-mindcare-dark rounded-xl flex items-center justify-center">
+                <Heart className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-xl font-bold text-gradient">
+                MindCare Companion
+              </h1>
+            </motion.div>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-1">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <motion.button
+                    key={item.id}
+                    onClick={() => setCurrentView(item.id)}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
+                      currentView === item.id
+                        ? "bg-mindcare-light text-white shadow-medium"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{item.label}</span>
+                  </motion.button>
+                );
+              })}
+            </nav>
+
+            {/* User Menu */}
+            <div className="flex items-center space-x-4">
+              <div className="hidden sm:flex items-center space-x-3 bg-gray-100 rounded-full px-4 py-2">
+                <User className="w-4 h-4 text-gray-600" />
+                <span className="text-sm font-medium text-gray-700">
+                  {user?.name || "User"}
+                </span>
+              </div>
+
+              <motion.button
+                onClick={logout}
+                className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <LogOut className="w-5 h-5" />
+              </motion.button>
+
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="w-5 h-5" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
+              </button>
             </div>
-            <button
-              onClick={logout}
-              style={{
-                padding: "0.5rem 1rem",
-                border: "1px solid #e2e8f0",
-                borderRadius: "20px",
-                background: "white",
-                color: "#4a5568",
-                cursor: "pointer",
-                fontWeight: "500",
-              }}
-            >
-              Logout
-            </button>
-          </nav>
+          </div>
+
+          {/* Mobile Navigation */}
+          <AnimatePresence>
+            {isMobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="md:hidden border-t border-gray-200 py-4"
+              >
+                <div className="flex flex-col space-y-2">
+                  {menuItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setCurrentView(item.id);
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className={`flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                          currentView === item.id
+                            ? "bg-mindcare-light text-white"
+                            : "text-gray-600 hover:bg-gray-100"
+                        }`}
+                      >
+                        <Icon className="w-5 h-5" />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </header>
+      </motion.header>
 
       {/* Main Content */}
-      <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem" }}>
-        {currentView === "chat" && <ChatInterface user={user} />}
-        {currentView === "dashboard" && <Dashboard user={user} />}
-        {currentView === "appointments" && <Appointments user={user} />}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentView}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {currentView === "chat" && <ChatInterface user={user} />}
+            {currentView === "dashboard" && <Dashboard user={user} />}
+            {currentView === "appointments" && <Appointments user={user} />}
+          </motion.div>
+        </AnimatePresence>
       </main>
     </div>
   );
 }
 
-// Login Form Component
+// Enhanced Login Form Component
 function LoginForm({ onLogin }) {
   const [email, setEmail] = useState("demo@student.edu");
   const [name, setName] = useState("Demo Student");
@@ -181,7 +217,6 @@ function LoginForm({ onLogin }) {
     setIsLoading(true);
 
     try {
-      // For demo purposes, create a mock user
       const userData = {
         id: 1,
         email,
@@ -200,55 +235,28 @@ function LoginForm({ onLogin }) {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontFamily: '"Segoe UI", system-ui, sans-serif',
-      }}
-    >
-      <div
-        style={{
-          background: "white",
-          padding: "3rem",
-          borderRadius: "20px",
-          boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-          maxWidth: "400px",
-          width: "100%",
-          margin: "1rem",
-        }}
+    <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="card max-w-md w-full p-8"
       >
-        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <h1
-            style={{
-              margin: "0 0 0.5rem 0",
-              color: "#2d3748",
-              background: "linear-gradient(135deg, #667eea, #764ba2)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              fontSize: "2rem",
-            }}
+        <div className="text-center mb-8">
+          <motion.div
+            className="w-16 h-16 bg-gradient-to-r from-mindcare-light to-mindcare-dark rounded-2xl flex items-center justify-center mx-auto mb-4"
+            whileHover={{ scale: 1.1, rotate: 5 }}
           >
-            🧠 MindCare Companion
+            <Heart className="w-8 h-8 text-white" />
+          </motion.div>
+          <h1 className="text-3xl font-bold text-gradient mb-2">
+            MindCare Companion
           </h1>
-          <p style={{ color: "#718096", margin: 0 }}>
-            Your 24/7 mental health support
-          </p>
+          <p className="text-gray-600">Your 24/7 mental health support</p>
         </div>
 
-        <form onSubmit={handleLogin}>
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                color: "#4a5568",
-                fontWeight: "500",
-              }}
-            >
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Email Address
             </label>
             <input
@@ -256,29 +264,13 @@ function LoginForm({ onLogin }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                border: "2px solid #e2e8f0",
-                borderRadius: "10px",
-                fontSize: "1rem",
-                transition: "border-color 0.2s",
-                outline: "none",
-              }}
-              onFocus={(e) => (e.target.style.borderColor = "#667eea")}
-              onBlur={(e) => (e.target.style.borderColor = "#e2e8f0")}
+              className="input-field"
+              placeholder="Enter your email"
             />
           </div>
 
-          <div style={{ marginBottom: "2rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                color: "#4a5568",
-                fontWeight: "500",
-              }}
-            >
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Full Name
             </label>
             <input
@@ -286,60 +278,54 @@ function LoginForm({ onLogin }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                border: "2px solid #e2e8f0",
-                borderRadius: "10px",
-                fontSize: "1rem",
-                transition: "border-color 0.2s",
-                outline: "none",
-              }}
-              onFocus={(e) => (e.target.style.borderColor = "#667eea")}
-              onBlur={(e) => (e.target.style.borderColor = "#e2e8f0")}
+              className="input-field"
+              placeholder="Enter your full name"
             />
           </div>
 
-          <button
+          <motion.button
             type="submit"
             disabled={isLoading}
-            style={{
-              width: "100%",
-              padding: "0.75rem",
-              background: "linear-gradient(135deg, #667eea, #764ba2)",
-              color: "white",
-              border: "none",
-              borderRadius: "10px",
-              fontSize: "1rem",
-              fontWeight: "600",
-              cursor: isLoading ? "not-allowed" : "pointer",
-              opacity: isLoading ? 0.7 : 1,
-              transition: "opacity 0.2s",
-            }}
+            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            {isLoading ? "🔄 Signing In..." : "🚀 Enter MindCare"}
-          </button>
+            {isLoading ? (
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Signing In...</span>
+              </div>
+            ) : (
+              "Enter MindCare"
+            )}
+          </motion.button>
         </form>
 
-        <div
-          style={{
-            marginTop: "2rem",
-            padding: "1rem",
-            background: "#f7fafc",
-            borderRadius: "10px",
-            fontSize: "0.9rem",
-            color: "#4a5568",
-          }}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mt-8 p-4 bg-blue-50 rounded-xl"
         >
-          <strong>🔒 Privacy First:</strong> Your conversations are encrypted
-          and secure. We follow HIPAA compliance standards.
-        </div>
-      </div>
+          <div className="flex items-start space-x-3">
+            <Shield className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-blue-900 mb-1">
+                Privacy First
+              </h3>
+              <p className="text-sm text-blue-700">
+                Your conversations are encrypted and secure. We follow HIPAA
+                compliance standards.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
 
-// Chat Interface Component
+// Enhanced Chat Interface Component
 function ChatInterface({ user }) {
   const [messages, setMessages] = useState([
     {
@@ -353,7 +339,6 @@ function ChatInterface({ user }) {
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [conversationId, setConversationId] = useState(null);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -378,42 +363,61 @@ function ChatInterface({ user }) {
     setIsTyping(true);
 
     try {
-      // Simulate API call for demo
-      setTimeout(() => {
-        const responses = [
-          "I understand you're going through a challenging time. It's important to remember that seeking help is a sign of strength. Would you like to talk about what's been on your mind?",
-          "Thank you for sharing that with me. Your feelings are valid and it's completely normal to experience ups and downs. Have you tried any coping strategies that have helped you before?",
-          "I can hear that you're feeling overwhelmed. Let's take this one step at a time. What's one small thing that might help you feel a bit better right now?",
-          "It sounds like you're dealing with a lot of stress. Remember to be kind to yourself. Would you like me to guide you through a quick breathing exercise?",
-          "Your mental health is important, and I'm glad you're reaching out. If you ever feel like you're in crisis, please don't hesitate to contact emergency services or a crisis helpline.",
-        ];
+      // Call the backend chat API
+      const response = await fetch(`${API_BASE_URL}/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: input,
+          userId: user?.id,
+          conversationId: messages.find((m) => m.conversationId)
+            ?.conversationId,
+        }),
+      });
 
-        const randomResponse =
-          responses[Math.floor(Math.random() * responses.length)];
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-        const assistantMessage = {
-          role: "assistant",
-          content: randomResponse,
-          timestamp: new Date().toISOString(),
-          sentiment: "supportive",
-        };
+      const data = await response.json();
 
-        setMessages((prev) => [...prev, assistantMessage]);
-        setIsTyping(false);
-      }, 1500);
+      const assistantMessage = {
+        role: "assistant",
+        content: data.reply,
+        timestamp: data.timestamp,
+        sentiment: data.sentiment,
+        intent: data.intent,
+        conversationId: data.conversationId,
+        crisis: data.crisis,
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+      setIsTyping(false);
+
+      // Show crisis alert if detected
+      if (data.crisis) {
+        setTimeout(() => {
+          alert(
+            "🚨 Crisis Detected: Please reach out to emergency services (995) or call +94-112-729729 (Samaritans) immediately if you're in immediate danger."
+          );
+        }, 1000);
+      }
     } catch (error) {
       console.error("Failed to send message:", error);
+
+      // Fallback response if API fails
+      const fallbackMessage = {
+        role: "assistant",
+        content:
+          "I apologize, but I'm having trouble connecting right now. Please try again in a moment. If you're in crisis, please contact emergency services at 995 immediately.",
+        timestamp: new Date().toISOString(),
+        sentiment: "supportive",
+      };
+
+      setMessages((prev) => [...prev, fallbackMessage]);
       setIsTyping(false);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content:
-            "I apologize, but I encountered a technical issue. Please try again or contact support if the problem persists.",
-          timestamp: new Date().toISOString(),
-          sentiment: "neutral",
-        },
-      ]);
     }
   };
 
@@ -425,234 +429,143 @@ function ChatInterface({ user }) {
   };
 
   return (
-    <div
-      style={{
-        background: "white",
-        borderRadius: "20px",
-        boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-        overflow: "hidden",
-        height: "80vh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      {/* Chat Header */}
-      <div
-        style={{
-          padding: "1.5rem",
-          background: "linear-gradient(135deg, #667eea, #764ba2)",
-          color: "white",
-          textAlign: "center",
-        }}
+    <div className="max-w-4xl mx-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="card overflow-hidden h-[80vh] flex flex-col"
       >
-        <h2 style={{ margin: 0, fontSize: "1.2rem" }}>💝 Safe Space Chat</h2>
-        <p style={{ margin: "0.5rem 0 0 0", opacity: 0.9, fontSize: "0.9rem" }}>
-          🔒 Private & Secure • Available 24/7
-        </p>
-      </div>
-
-      {/* Crisis Banner */}
-      <div
-        style={{
-          background: "#fed7d7",
-          color: "#c53030",
-          padding: "0.75rem 1.5rem",
-          fontSize: "0.9rem",
-          textAlign: "center",
-          borderBottom: "1px solid #fbb6ce",
-        }}
-      >
-        <strong>🚨 Crisis Support:</strong> If you're having thoughts of
-        self-harm, please call <strong>995</strong> (Emergency) or{" "}
-        <strong>1800-221-4444</strong> (Samaritans)
-      </div>
-
-      {/* Messages Area */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "1rem",
-          background: "#f8fafc",
-        }}
-      >
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            style={{
-              marginBottom: "1rem",
-              display: "flex",
-              justifyContent:
-                message.role === "user" ? "flex-end" : "flex-start",
-            }}
-          >
-            <div
-              style={{
-                maxWidth: "70%",
-                padding: "1rem",
-                borderRadius: "20px",
-                background:
-                  message.role === "user"
-                    ? "linear-gradient(135deg, #667eea, #764ba2)"
-                    : "white",
-                color: message.role === "user" ? "white" : "#2d3748",
-                boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                position: "relative",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "0.9rem",
-                  lineHeight: "1.5",
-                  wordWrap: "break-word",
-                }}
-              >
-                {message.content}
-              </div>
-              <div
-                style={{
-                  fontSize: "0.75rem",
-                  opacity: 0.7,
-                  marginTop: "0.5rem",
-                  textAlign: "right",
-                }}
-              >
-                {new Date(message.timestamp).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </div>
+        {/* Chat Header */}
+        <div className="gradient-bg text-white p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold mb-1">Safe Space Chat</h2>
+              <p className="opacity-90 text-sm">
+                Private & Secure • Available 24/7
+              </p>
+            </div>
+            <div className="bg-white/20 rounded-full p-3">
+              <MessageCircle className="w-6 h-6" />
             </div>
           </div>
-        ))}
+        </div>
 
-        {isTyping && (
-          <div
-            style={{
-              marginBottom: "1rem",
-              display: "flex",
-              justifyContent: "flex-start",
-            }}
-          >
-            <div
-              style={{
-                padding: "1rem",
-                borderRadius: "20px",
-                background: "white",
-                boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                color: "#4a5568",
-              }}
-            >
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+        {/* Crisis Banner */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="bg-red-50 border-l-4 border-red-400 p-4"
+        >
+          <div className="flex items-center space-x-3">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
+            <div className="text-sm">
+              <span className="font-semibold text-red-800">
+                Crisis Support:
+              </span>
+              <span className="text-red-700 ml-1">
+                If you're having thoughts of self-harm, call{" "}
+                <span className="font-semibold">1926</span> (Emergency) or{" "}
+                <span className="font-semibold">+94-112-729729</span>{" "}
+                (Samaritans)
+              </span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-6 bg-gray-50 space-y-4">
+          <AnimatePresence>
+            {messages.map((message, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex ${
+                  message.role === "user" ? "justify-end" : "justify-start"
+                }`}
               >
-                <div style={{ fontSize: "0.9rem" }}>MindCare is typing</div>
-                <div style={{ display: "flex", gap: "2px" }}>
-                  <div
-                    style={{
-                      width: "4px",
-                      height: "4px",
-                      borderRadius: "50%",
-                      background: "#667eea",
-                      animation: "pulse 1.5s infinite",
-                    }}
-                  ></div>
-                  <div
-                    style={{
-                      width: "4px",
-                      height: "4px",
-                      borderRadius: "50%",
-                      background: "#667eea",
-                      animation: "pulse 1.5s infinite 0.2s",
-                    }}
-                  ></div>
-                  <div
-                    style={{
-                      width: "4px",
-                      height: "4px",
-                      borderRadius: "50%",
-                      background: "#667eea",
-                      animation: "pulse 1.5s infinite 0.4s",
-                    }}
-                  ></div>
+                <div
+                  className={`max-w-[70%] rounded-2xl px-4 py-3 shadow-soft ${
+                    message.role === "user"
+                      ? "bg-mindcare-light text-white"
+                      : "bg-white text-gray-800"
+                  }`}
+                >
+                  <p className="text-sm leading-relaxed">{message.content}</p>
+                  <p
+                    className={`text-xs mt-2 ${
+                      message.role === "user"
+                        ? "text-white/70"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {new Date(message.timestamp).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
+          {isTyping && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex justify-start"
+            >
+              <div className="bg-white rounded-2xl px-4 py-3 shadow-soft">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">
+                    MindCare is typing
+                  </span>
+                  <div className="flex space-x-1 typing-indicator">
+                    <div className="w-2 h-2 bg-mindcare-light rounded-full"></div>
+                    <div className="w-2 h-2 bg-mindcare-light rounded-full"></div>
+                    <div className="w-2 h-2 bg-mindcare-light rounded-full"></div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input Area */}
+        <div className="bg-white border-t border-gray-200 p-4">
+          <div className="flex items-end space-x-3">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Share what's on your mind... (Press Enter to send)"
+              disabled={isTyping}
+              className="flex-1 resize-none border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-mindcare-light focus:border-transparent transition-all duration-200 outline-none"
+              rows="2"
+            />
+            <motion.button
+              onClick={sendMessage}
+              disabled={isTyping || !input.trim()}
+              className="bg-mindcare-light text-white p-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed shadow-medium hover:shadow-large transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Send className="w-5 h-5" />
+            </motion.button>
           </div>
-        )}
-
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input Area */}
-      <div
-        style={{
-          padding: "1rem",
-          background: "white",
-          borderTop: "1px solid #e2e8f0",
-        }}
-      >
-        <div style={{ display: "flex", gap: "1rem", alignItems: "flex-end" }}>
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Share what's on your mind... (Press Enter to send)"
-            disabled={isTyping}
-            style={{
-              flex: 1,
-              padding: "0.75rem",
-              border: "2px solid #e2e8f0",
-              borderRadius: "15px",
-              fontSize: "1rem",
-              resize: "none",
-              minHeight: "50px",
-              maxHeight: "120px",
-              outline: "none",
-              transition: "border-color 0.2s",
-            }}
-            onFocus={(e) => (e.target.style.borderColor = "#667eea")}
-            onBlur={(e) => (e.target.style.borderColor = "#e2e8f0")}
-          />
-          <button
-            onClick={sendMessage}
-            disabled={isTyping || !input.trim()}
-            style={{
-              padding: "0.75rem 1.5rem",
-              background:
-                input.trim() && !isTyping
-                  ? "linear-gradient(135deg, #667eea, #764ba2)"
-                  : "#e2e8f0",
-              color: input.trim() && !isTyping ? "white" : "#a0aec0",
-              border: "none",
-              borderRadius: "15px",
-              fontSize: "1rem",
-              fontWeight: "600",
-              cursor: input.trim() && !isTyping ? "pointer" : "not-allowed",
-              transition: "all 0.2s",
-            }}
-          >
-            {isTyping ? "⏳" : "💬"}
-          </button>
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            Remember: This is a supportive space. Your privacy and wellbeing are
+            our priority.
+          </p>
         </div>
-
-        <div
-          style={{
-            marginTop: "0.5rem",
-            fontSize: "0.8rem",
-            color: "#718096",
-            textAlign: "center",
-          }}
-        >
-          Remember: This is a supportive space. Your privacy and wellbeing are
-          our priority.
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
 
-// Dashboard Component
+// Enhanced Dashboard Component
 function Dashboard({ user }) {
   const [stats, setStats] = useState({
     totalConversations: 12,
@@ -662,207 +575,191 @@ function Dashboard({ user }) {
     lastLogin: new Date().toISOString(),
   });
 
+  const moodData = [
+    { day: "Mon", mood: "happy", emoji: "😊" },
+    { day: "Tue", mood: "happy", emoji: "😊" },
+    { day: "Wed", mood: "neutral", emoji: "😐" },
+    { day: "Thu", mood: "happy", emoji: "😊" },
+    { day: "Fri", mood: "sad", emoji: "😔" },
+    { day: "Sat", mood: "", emoji: "" },
+    { day: "Sun", mood: "", emoji: "" },
+  ];
+
+  const resources = [
+    {
+      title: "Crisis Helplines",
+      description: "24/7 support: 995 (Emergency), 1800-221-4444 (Samaritans)",
+      icon: Phone,
+      color: "red",
+    },
+    {
+      title: "Breathing Exercises",
+      description: "4-7-8 technique: Inhale 4, Hold 7, Exhale 8",
+      icon: Heart,
+      color: "green",
+    },
+    {
+      title: "Campus Counseling",
+      description: "Free counseling services available at Student Center",
+      icon: ExternalLink,
+      color: "blue",
+    },
+  ];
+
   return (
-    <div style={{ display: "grid", gap: "2rem" }}>
-      <div
-        style={{
-          background: "white",
-          padding: "2rem",
-          borderRadius: "20px",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-        }}
+    <div className="space-y-8">
+      {/* Welcome Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="card p-6"
       >
-        <h2 style={{ margin: "0 0 1rem 0", color: "#2d3748" }}>
-          📊 Your Mental Health Journey
-        </h2>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          Welcome back, {user?.name}! 👋
+        </h1>
+        <p className="text-gray-600">
+          Here's how your mental health journey is progressing.
+        </p>
+      </motion.div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "1rem",
-          }}
-        >
-          <div
-            style={{
-              padding: "1.5rem",
-              background: "linear-gradient(135deg, #667eea, #764ba2)",
-              color: "white",
-              borderRadius: "15px",
-              textAlign: "center",
-            }}
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          {
+            label: "Conversations",
+            value: stats.totalConversations,
+            icon: MessageCircle,
+            color: "from-blue-500 to-blue-600",
+          },
+          {
+            label: "Messages",
+            value: stats.totalMessages,
+            icon: TrendingUp,
+            color: "from-green-500 to-green-600",
+          },
+          {
+            label: "Satisfaction",
+            value: `${stats.averageRating}/5`,
+            icon: Smile,
+            color: "from-yellow-500 to-orange-500",
+          },
+          {
+            label: "Crisis Alerts",
+            value: stats.crisisAlerts,
+            icon: Shield,
+            color:
+              stats.crisisAlerts > 0
+                ? "from-red-500 to-red-600"
+                : "from-green-500 to-green-600",
+          },
+        ].map((stat, index) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="card-hover p-6"
           >
-            <div style={{ fontSize: "2rem", fontWeight: "bold" }}>
-              {stats.totalConversations}
-            </div>
-            <div style={{ opacity: 0.9 }}>Conversations</div>
-          </div>
-
-          <div
-            style={{
-              padding: "1.5rem",
-              background: "linear-gradient(135deg, #48bb78, #38a169)",
-              color: "white",
-              borderRadius: "15px",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: "2rem", fontWeight: "bold" }}>
-              {stats.totalMessages}
-            </div>
-            <div style={{ opacity: 0.9 }}>Messages Exchanged</div>
-          </div>
-
-          <div
-            style={{
-              padding: "1.5rem",
-              background: "linear-gradient(135deg, #ed8936, #dd6b20)",
-              color: "white",
-              borderRadius: "15px",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: "2rem", fontWeight: "bold" }}>
-              {stats.averageRating}/5
-            </div>
-            <div style={{ opacity: 0.9 }}>Satisfaction</div>
-          </div>
-
-          <div
-            style={{
-              padding: "1.5rem",
-              background:
-                stats.crisisAlerts > 0
-                  ? "linear-gradient(135deg, #f56565, #e53e3e)"
-                  : "linear-gradient(135deg, #68d391, #48bb78)",
-              color: "white",
-              borderRadius: "15px",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: "2rem", fontWeight: "bold" }}>
-              {stats.crisisAlerts}
-            </div>
-            <div style={{ opacity: 0.9 }}>Crisis Alerts</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Mood Tracking */}
-      <div
-        style={{
-          background: "white",
-          padding: "2rem",
-          borderRadius: "20px",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-        }}
-      >
-        <h3 style={{ margin: "0 0 1rem 0", color: "#2d3748" }}>
-          🎭 Mood Tracker
-        </h3>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(7, 1fr)",
-            gap: "0.5rem",
-            textAlign: "center",
-          }}
-        >
-          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
-            (day, index) => (
-              <div key={day}>
-                <div
-                  style={{
-                    fontSize: "0.8rem",
-                    color: "#718096",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  {day}
-                </div>
-                <div
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "50%",
-                    background:
-                      index < 5
-                        ? "linear-gradient(135deg, #48bb78, #38a169)"
-                        : "#e2e8f0",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    margin: "0 auto",
-                    fontSize: "1.2rem",
-                  }}
-                >
-                  {index < 5 ? "😊" : ""}
-                </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                <p className="text-sm text-gray-600">{stat.label}</p>
               </div>
-            )
-          )}
-        </div>
+              <div
+                className={`w-12 h-12 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center`}
+              >
+                <stat.icon className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </motion.div>
+        ))}
       </div>
+
+      {/* Mood Tracker */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="card p-6"
+      >
+        <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+          <Smile className="w-5 h-5 mr-2 text-mindcare-light" />
+          Weekly Mood Tracker
+        </h3>
+        <div className="grid grid-cols-7 gap-4">
+          {moodData.map((day, index) => (
+            <motion.div
+              key={day.day}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 + index * 0.1 }}
+              className="text-center"
+            >
+              <p className="text-xs text-gray-500 mb-2">{day.day}</p>
+              <div
+                className={`w-12 h-12 mx-auto rounded-full flex items-center justify-center text-lg ${
+                  day.mood
+                    ? day.mood === "happy"
+                      ? "bg-green-100"
+                      : day.mood === "neutral"
+                      ? "bg-yellow-100"
+                      : "bg-red-100"
+                    : "bg-gray-100"
+                }`}
+              >
+                {day.emoji}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
 
       {/* Resources */}
-      <div
-        style={{
-          background: "white",
-          padding: "2rem",
-          borderRadius: "20px",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-        }}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        className="card p-6"
       >
-        <h3 style={{ margin: "0 0 1rem 0", color: "#2d3748" }}>
-          🔗 Helpful Resources
+        <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+          <ExternalLink className="w-5 h-5 mr-2 text-mindcare-light" />
+          Helpful Resources
         </h3>
-        <div style={{ display: "grid", gap: "1rem" }}>
-          <div
-            style={{
-              padding: "1rem",
-              background: "#f7fafc",
-              borderRadius: "10px",
-              borderLeft: "4px solid #667eea",
-            }}
-          >
-            <strong>Crisis Helplines</strong>
-            <p style={{ margin: "0.5rem 0 0 0", color: "#4a5568" }}>
-              24/7 support: 995 (Emergency), 1800-221-4444 (Samaritans)
-            </p>
-          </div>
-          <div
-            style={{
-              padding: "1rem",
-              background: "#f7fafc",
-              borderRadius: "10px",
-              borderLeft: "4px solid #48bb78",
-            }}
-          >
-            <strong>Breathing Exercises</strong>
-            <p style={{ margin: "0.5rem 0 0 0", color: "#4a5568" }}>
-              4-7-8 technique: Inhale 4, Hold 7, Exhale 8
-            </p>
-          </div>
-          <div
-            style={{
-              padding: "1rem",
-              background: "#f7fafc",
-              borderRadius: "10px",
-              borderLeft: "4px solid #ed8936",
-            }}
-          >
-            <strong>Campus Counseling</strong>
-            <p style={{ margin: "0.5rem 0 0 0", color: "#4a5568" }}>
-              Free counseling services available at Student Center
-            </p>
-          </div>
+        <div className="space-y-4">
+          {resources.map((resource, index) => (
+            <motion.div
+              key={resource.title}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.7 + index * 0.1 }}
+              className="flex items-start space-x-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
+            >
+              <div
+                className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  resource.color === "red"
+                    ? "bg-red-100 text-red-600"
+                    : resource.color === "green"
+                    ? "bg-green-100 text-green-600"
+                    : "bg-blue-100 text-blue-600"
+                }`}
+              >
+                <resource.icon className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-900">
+                  {resource.title}
+                </h4>
+                <p className="text-sm text-gray-600">{resource.description}</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
 
-// Appointments Component
+// Enhanced Appointments Component
 function Appointments({ user }) {
   const [appointments, setAppointments] = useState([
     {
@@ -872,6 +769,7 @@ function Appointments({ user }) {
       time: "14:00",
       type: "Individual Counseling",
       status: "scheduled",
+      specialty: "Anxiety/Depression",
     },
     {
       id: 2,
@@ -880,95 +778,71 @@ function Appointments({ user }) {
       time: "10:00",
       type: "Group Therapy",
       status: "confirmed",
+      specialty: "Stress Management",
     },
   ]);
 
   const [showBooking, setShowBooking] = useState(false);
 
-  return (
-    <div style={{ display: "grid", gap: "2rem" }}>
-      <div
-        style={{
-          background: "white",
-          padding: "2rem",
-          borderRadius: "20px",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "2rem",
-          }}
-        >
-          <h2 style={{ margin: 0, color: "#2d3748" }}>📅 Your Appointments</h2>
-          <button
-            onClick={() => setShowBooking(!showBooking)}
-            style={{
-              padding: "0.75rem 1.5rem",
-              background: "linear-gradient(135deg, #667eea, #764ba2)",
-              color: "white",
-              border: "none",
-              borderRadius: "10px",
-              fontWeight: "600",
-              cursor: "pointer",
-            }}
-          >
-            {showBooking ? "Cancel" : "+ Book Appointment"}
-          </button>
-        </div>
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "confirmed":
+        return "bg-green-100 text-green-800";
+      case "scheduled":
+        return "bg-blue-100 text-blue-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
 
+  return (
+    <div className="max-w-4xl mx-auto space-y-8">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+      >
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Your Appointments
+          </h1>
+          <p className="text-gray-600">Manage your counseling sessions</p>
+        </div>
+        <motion.button
+          onClick={() => setShowBooking(!showBooking)}
+          className="btn-primary"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Calendar className="w-4 h-4 mr-2" />
+          {showBooking ? "Cancel" : "Book Appointment"}
+        </motion.button>
+      </motion.div>
+
+      {/* Booking Form */}
+      <AnimatePresence>
         {showBooking && (
-          <div
-            style={{
-              padding: "1.5rem",
-              background: "#f7fafc",
-              borderRadius: "15px",
-              marginBottom: "2rem",
-            }}
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="card p-6"
           >
-            <h3 style={{ margin: "0 0 1rem 0", color: "#2d3748" }}>
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">
               Book New Appointment
             </h3>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                gap: "1rem",
-              }}
-            >
-              <select
-                style={{
-                  padding: "0.75rem",
-                  border: "2px solid #e2e8f0",
-                  borderRadius: "10px",
-                  outline: "none",
-                }}
-              >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <select className="input-field">
                 <option>Select Counselor</option>
                 <option>Dr. Lisa Wong - Anxiety/Depression</option>
                 <option>Dr. Michael Tan - Stress Management</option>
                 <option>Dr. Sarah Lee - Crisis Intervention</option>
               </select>
-              <input
-                type="date"
-                style={{
-                  padding: "0.75rem",
-                  border: "2px solid #e2e8f0",
-                  borderRadius: "10px",
-                  outline: "none",
-                }}
-              />
-              <select
-                style={{
-                  padding: "0.75rem",
-                  border: "2px solid #e2e8f0",
-                  borderRadius: "10px",
-                  outline: "none",
-                }}
-              >
+              <input type="date" className="input-field" />
+              <select className="input-field">
                 <option>Select Time</option>
                 <option>09:00 AM</option>
                 <option>10:00 AM</option>
@@ -977,79 +851,100 @@ function Appointments({ user }) {
                 <option>03:00 PM</option>
                 <option>04:00 PM</option>
               </select>
-              <button
-                style={{
-                  padding: "0.75rem",
-                  background: "linear-gradient(135deg, #48bb78, #38a169)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "10px",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                }}
+              <motion.button
+                className="bg-green-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-green-700 transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 Book Now
-              </button>
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
         )}
+      </AnimatePresence>
 
-        <div style={{ display: "grid", gap: "1rem" }}>
-          {appointments.map((appointment) => (
-            <div
-              key={appointment.id}
-              style={{
-                padding: "1.5rem",
-                border: "2px solid #e2e8f0",
-                borderRadius: "15px",
-                display: "grid",
-                gridTemplateColumns: "1fr auto",
-                alignItems: "center",
-                gap: "1rem",
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    fontWeight: "600",
-                    color: "#2d3748",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  {appointment.counselor}
+      {/* Appointments List */}
+      <div className="space-y-4">
+        {appointments.map((appointment, index) => (
+          <motion.div
+            key={appointment.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="card-hover p-6"
+          >
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center space-x-3 mb-2">
+                  <div className="w-10 h-10 bg-mindcare-light rounded-full flex items-center justify-center">
+                    <User className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">
+                      {appointment.counselor}
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      {appointment.specialty}
+                    </p>
+                  </div>
                 </div>
-                <div style={{ color: "#4a5568", marginBottom: "0.5rem" }}>
-                  📅 {new Date(appointment.date).toLocaleDateString()} at{" "}
-                  {appointment.time}
-                </div>
-                <div style={{ color: "#718096", fontSize: "0.9rem" }}>
-                  {appointment.type}
+                <div className="flex items-center space-x-4 text-sm text-gray-600">
+                  <div className="flex items-center space-x-1">
+                    <Calendar className="w-4 h-4" />
+                    <span>
+                      {new Date(appointment.date).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Clock className="w-4 h-4" />
+                    <span>{appointment.time}</span>
+                  </div>
+                  <span className="text-gray-400">•</span>
+                  <span>{appointment.type}</span>
                 </div>
               </div>
-              <div>
+              <div className="flex items-center space-x-3">
                 <span
-                  style={{
-                    padding: "0.5rem 1rem",
-                    borderRadius: "20px",
-                    fontSize: "0.8rem",
-                    fontWeight: "600",
-                    background:
-                      appointment.status === "confirmed"
-                        ? "#c6f6d5"
-                        : "#bee3f8",
-                    color:
-                      appointment.status === "confirmed"
-                        ? "#22543d"
-                        : "#2a4365",
-                  }}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                    appointment.status
+                  )}`}
                 >
                   {appointment.status.toUpperCase()}
                 </span>
+                <motion.button
+                  className="text-mindcare-light hover:text-mindcare-dark transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </motion.button>
               </div>
             </div>
-          ))}
-        </div>
+          </motion.div>
+        ))}
       </div>
+
+      {/* No appointments message */}
+      {appointments.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="card p-12 text-center"
+        >
+          <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            No appointments scheduled
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Book your first appointment to get started with professional
+            support.
+          </p>
+          <button onClick={() => setShowBooking(true)} className="btn-primary">
+            <Calendar className="w-4 h-4 mr-2" />
+            Book Your First Appointment
+          </button>
+        </motion.div>
+      )}
     </div>
   );
 }
