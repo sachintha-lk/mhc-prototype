@@ -33,7 +33,7 @@ async function initGeminiAI() {
     try {
       // Try to get API key from environment variable first
       let apiKey = process.env.GEMINI_API_KEY;
-      
+
       // If not in env, try to get from Secrets Manager
       if (!apiKey && process.env.GEMINI_SECRET_NAME) {
         const data = await secretsManager
@@ -42,7 +42,7 @@ async function initGeminiAI() {
         const secrets = JSON.parse(data.SecretString);
         apiKey = secrets.GEMINI_API_KEY;
       }
-      
+
       if (apiKey) {
         genAI = new GoogleGenerativeAI(apiKey);
         console.log("Gemini AI initialized successfully");
@@ -324,12 +324,19 @@ function generateResponse(intent, userText, conversationHistory = []) {
 }
 
 // Generate AI response using Google Gemini
-async function generateGeminiResponse(userText, intent, conversationHistory = [], userName = "Student") {
+async function generateGeminiResponse(
+  userText,
+  intent,
+  conversationHistory = [],
+  userName = "Student"
+) {
   try {
     await initGeminiAI();
-    
+
     if (!genAI) {
-      console.warn("Gemini AI not initialized, falling back to template responses");
+      console.warn(
+        "Gemini AI not initialized, falling back to template responses"
+      );
       return generateResponse(intent, userText, conversationHistory);
     }
 
@@ -350,23 +357,27 @@ CURRENT CONTEXT:
 - User's name: ${userName}
 
 RESPONSE GUIDELINES:
-${intent === 'crisis' ? 
-  `CRISIS SITUATION: This user may be in immediate danger. Your response MUST:
+${
+  intent === "crisis"
+    ? `CRISIS SITUATION: This user may be in immediate danger. Your response MUST:
   - Express serious concern and validation
   - Strongly encourage immediate professional help
   - Provide crisis resources (Emergency: 995, Samaritans: +94-112-729729)
   - Emphasize that their life has value
-  - Be supportive but directive about seeking help` 
-  : 
-  `Normal conversation about ${intent}. Provide supportive, practical advice and ask engaging follow-up questions.`
+  - Be supportive but directive about seeking help`
+    : `Normal conversation about ${intent}. Provide supportive, practical advice and ask engaging follow-up questions.`
 }
 
 Remember: You're a supportive companion, not a replacement for professional therapy. If the conversation becomes too clinical or the user needs specialized help, gently recommend professional resources.`;
 
     // Prepare conversation history for context
-    const conversationContext = conversationHistory.slice(-6).map(msg => 
-      `${msg.role === 'user' ? 'Student' : 'MindCare'}: ${msg.content}`
-    ).join('\n');
+    const conversationContext = conversationHistory
+      .slice(-6)
+      .map(
+        (msg) =>
+          `${msg.role === "user" ? "Student" : "MindCare"}: ${msg.content}`
+      )
+      .join("\n");
 
     const fullPrompt = `${systemPrompt}
 
@@ -383,18 +394,20 @@ MindCare:`;
 
     // Clean up response
     generatedText = generatedText.trim();
-    
+
     // Remove any AI assistant prefixes that might leak through
-    generatedText = generatedText.replace(/^(MindCare:|Assistant:|AI:)\s*/i, '');
-    
+    generatedText = generatedText.replace(
+      /^(MindCare:|Assistant:|AI:)\s*/i,
+      ""
+    );
+
     // Ensure response isn't too long
     if (generatedText.length > 500) {
-      generatedText = generatedText.substring(0, 497) + '...';
+      generatedText = generatedText.substring(0, 497) + "...";
     }
 
     console.log(`Gemini AI response generated for intent: ${intent}`);
     return generatedText;
-
   } catch (error) {
     console.error("Gemini AI generation failed:", error);
     // Fallback to template responses
@@ -567,7 +580,12 @@ exports.handler = async (event) => {
 
       // Generate AI response using Gemini
       const userName = body.userName || "Student";
-      const response = await generateGeminiResponse(userText, intentCategory, conversationHistory, userName);
+      const response = await generateGeminiResponse(
+        userText,
+        intentCategory,
+        conversationHistory,
+        userName
+      );
 
       // Save assistant response
       await saveMessageToDb(client, convId, "assistant", response, {
