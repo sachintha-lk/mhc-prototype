@@ -1,0 +1,10 @@
+{
+  "name": "chat-handler",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "ioredis": "^5.3.2",
+    "pg": "^8.11.0",
+    "aws-sdk": "^2.1370.0"
+  }
+}
