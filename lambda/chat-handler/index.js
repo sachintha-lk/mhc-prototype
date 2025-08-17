@@ -1,11 +1,13 @@
 const AWS = require("aws-sdk");
 const { Pool } = require("pg");
 const IORedis = require("ioredis");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const secretsManager = new AWS.SecretsManager();
 const comprehend = new AWS.Comprehend();
 let pgPool = null;
 let redisClient = null;
+let genAI = null;
 
 // Crisis keywords for immediate detection
 const crisisKeywords = [
@@ -24,6 +26,34 @@ const crisisKeywords = [
   "no point",
   "cant go on",
 ];
+
+// Initialize Gemini AI
+async function initGeminiAI() {
+  if (!genAI) {
+    try {
+      // Try to get API key from environment variable first
+      let apiKey = process.env.GEMINI_API_KEY;
+      
+      // If not in env, try to get from Secrets Manager
+      if (!apiKey && process.env.GEMINI_SECRET_NAME) {
+        const data = await secretsManager
+          .getSecretValue({ SecretId: process.env.GEMINI_SECRET_NAME })
+          .promise();
+        const secrets = JSON.parse(data.SecretString);
+        apiKey = secrets.GEMINI_API_KEY;
+      }
+      
+      if (apiKey) {
+        genAI = new GoogleGenerativeAI(apiKey);
+        console.log("Gemini AI initialized successfully");
+      } else {
+        console.warn("No Gemini API key found in environment or secrets");
+      }
+    } catch (error) {
+      console.error("Failed to initialize Gemini AI:", error);
+    }
+  }
+}
 
 // Mental health response templates with more sophisticated AI-like responses
 const responses = {
@@ -293,6 +323,85 @@ function generateResponse(intent, userText, conversationHistory = []) {
   return baseResponse;
 }
 
+// Generate AI response using Google Gemini
+async function generateGeminiResponse(userText, intent, conversationHistory = [], userName = "Student") {
+  try {
+    await initGeminiAI();
+    
+    if (!genAI) {
+      console.warn("Gemini AI not initialized, falling back to template responses");
+      return generateResponse(intent, userText, conversationHistory);
+    }
+
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    // Create context-aware system prompt
+    const systemPrompt = `You are MindCare, a compassionate and professional mental health companion specifically designed for university students and young adults. Your role is to provide empathetic, evidence-based support while maintaining appropriate boundaries.
+
+CORE PRINCIPLES:
+- Be warm, understanding, and non-judgmental
+- Provide practical, actionable advice
+- Recognize when professional help is needed
+- Keep responses conversational and under 150 words
+- Use age-appropriate language for college students
+
+CURRENT CONTEXT:
+- User's emotional state: ${intent}
+- User's name: ${userName}
+
+RESPONSE GUIDELINES:
+${intent === 'crisis' ? 
+  `CRISIS SITUATION: This user may be in immediate danger. Your response MUST:
+  - Express serious concern and validation
+  - Strongly encourage immediate professional help
+  - Provide crisis resources (Emergency: 995, Samaritans: +94-112-729729)
+  - Emphasize that their life has value
+  - Be supportive but directive about seeking help` 
+  : 
+  `Normal conversation about ${intent}. Provide supportive, practical advice and ask engaging follow-up questions.`
+}
+
+Remember: You're a supportive companion, not a replacement for professional therapy. If the conversation becomes too clinical or the user needs specialized help, gently recommend professional resources.`;
+
+    // Prepare conversation history for context
+    const conversationContext = conversationHistory.slice(-6).map(msg => 
+      `${msg.role === 'user' ? 'Student' : 'MindCare'}: ${msg.content}`
+    ).join('\n');
+
+    const fullPrompt = `${systemPrompt}
+
+RECENT CONVERSATION:
+${conversationContext}
+
+Student: ${userText}
+
+MindCare:`;
+
+    const result = await model.generateContent(fullPrompt);
+    const response = result.response;
+    let generatedText = response.text();
+
+    // Clean up response
+    generatedText = generatedText.trim();
+    
+    // Remove any AI assistant prefixes that might leak through
+    generatedText = generatedText.replace(/^(MindCare:|Assistant:|AI:)\s*/i, '');
+    
+    // Ensure response isn't too long
+    if (generatedText.length > 500) {
+      generatedText = generatedText.substring(0, 497) + '...';
+    }
+
+    console.log(`Gemini AI response generated for intent: ${intent}`);
+    return generatedText;
+
+  } catch (error) {
+    console.error("Gemini AI generation failed:", error);
+    // Fallback to template responses
+    return generateResponse(intent, userText, conversationHistory);
+  }
+}
+
 async function saveMessageToDb(
   client,
   conversationId,
@@ -419,6 +528,22 @@ exports.handler = async (event) => {
       const intentCategory = categorizeIntent(userText);
       const isCrisis = detectCrisis(userText);
 
+      // Get conversation history for context
+      let conversationHistory = [];
+      try {
+        const historyQuery = `
+          SELECT role, content, created_at 
+          FROM messages 
+          WHERE conversation_id = $1 
+          ORDER BY created_at DESC 
+          LIMIT 10
+        `;
+        const historyResult = await client.query(historyQuery, [convId]);
+        conversationHistory = historyResult.rows.reverse(); // Reverse to get chronological order
+      } catch (historyError) {
+        console.warn("Failed to fetch conversation history:", historyError);
+      }
+
       // Save user message
       const userMessageId = await saveMessageToDb(
         client,
@@ -440,13 +565,14 @@ exports.handler = async (event) => {
         console.log("CRISIS ALERT: Crisis detected in conversation", convId);
       }
 
-      // Generate response
-      const response = generateResponse(intentCategory, userText);
+      // Generate AI response using Gemini
+      const userName = body.userName || "Student";
+      const response = await generateGeminiResponse(userText, intentCategory, conversationHistory, userName);
 
       // Save assistant response
       await saveMessageToDb(client, convId, "assistant", response, {
         intent: intentCategory,
-        responseType: "automated",
+        responseType: "gemini_ai",
         source: "api",
       });
 

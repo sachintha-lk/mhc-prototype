@@ -372,6 +372,7 @@ function ChatInterface({ user }) {
         body: JSON.stringify({
           text: input,
           userId: user?.id,
+          userName: user?.name,
           conversationId: messages.find((m) => m.conversationId)
             ?.conversationId,
         }),
@@ -439,9 +440,14 @@ function ChatInterface({ user }) {
         <div className="gradient-bg text-white p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold mb-1">Safe Space Chat</h2>
+              <h2 className="text-xl font-semibold mb-1">
+                Safe Space Chat
+                <span className="ml-2 px-2 py-1 bg-white/20 rounded-full text-xs font-medium">
+                  🤖 AI-Powered
+                </span>
+              </h2>
               <p className="opacity-90 text-sm">
-                Private & Secure • Available 24/7
+                Private & Secure • Available 24/7 • Powered by Google Gemini
               </p>
             </div>
             <div className="bg-white/20 rounded-full p-3">
