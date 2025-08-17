@@ -17,10 +17,13 @@ interface ComputeStackProps extends cdk.StackProps {
 }
 
 export class ComputeStack extends cdk.Stack {
+  public readonly chatLambda: lambda.Function;
+  public readonly apiGateway: apigw.RestApi;
+
   constructor(scope: Construct, id: string, props: ComputeStackProps) {
     super(scope, id, props);
 
-    const chatLambda = new lambda.Function(this, "ChatHandler", {
+    this.chatLambda = new lambda.Function(this, "ChatHandler", {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: "index.handler",
       code: lambda.Code.fromAsset("../lambda/chat-handler"),
@@ -70,25 +73,25 @@ export class ComputeStack extends cdk.Stack {
       "DbSecret",
       "mhc/aurora"
     );
-    dbSecret.grantRead(chatLambda);
+    dbSecret.grantRead(this.chatLambda);
 
-    const api = new apigw.RestApi(this, "MhcApi", {
+    this.apiGateway = new apigw.RestApi(this, "MhcApi", {
       restApiName: "MHC Service",
       deployOptions: { stageName: "prod" },
     });
-    api.root
+    this.apiGateway.root
       .addResource("chat")
-      .addMethod("POST", new apigw.LambdaIntegration(chatLambda));
-    api.root
+      .addMethod("POST", new apigw.LambdaIntegration(this.chatLambda));
+    this.apiGateway.root
       .addResource("profile")
       .addMethod("POST", new apigw.LambdaIntegration(profileLambda));
-    api.root
+    this.apiGateway.root
       .addResource("service")
       .addMethod("GET", new apigw.LambdaIntegration(serviceLambda));
-    api.root
+    this.apiGateway.root
       .addResource("appointment")
       .addMethod("POST", new apigw.LambdaIntegration(appointmentLambda));
-    api.root
+    this.apiGateway.root
       .addResource("feedback")
       .addMethod("POST", new apigw.LambdaIntegration(feedbackLambda));
 
@@ -98,7 +101,7 @@ export class ComputeStack extends cdk.Stack {
       this,
       "ChatLambdaErrorAlarm",
       {
-        metric: chatLambda.metricErrors(),
+        metric: this.chatLambda.metricErrors(),
         threshold: 1,
         evaluationPeriods: 1,
       }
@@ -108,7 +111,7 @@ export class ComputeStack extends cdk.Stack {
     // Associate WAF with API Gateway if provided
     if (props.webAcl) {
       new wafv2.CfnWebACLAssociation(this, "ApiGatewayWafAssociation", {
-        resourceArn: api.deploymentStage.stageArn,
+        resourceArn: this.apiGateway.deploymentStage.stageArn,
         webAclArn: props.webAcl.attrArn,
       });
     }
@@ -141,6 +144,6 @@ export class ComputeStack extends cdk.Stack {
       ],
     });
 
-    new cdk.CfnOutput(this, "ApiUrl", { value: api.url });
+    new cdk.CfnOutput(this, "ApiUrl", { value: this.apiGateway.url });
   }
 }
