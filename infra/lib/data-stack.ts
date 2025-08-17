@@ -41,6 +41,7 @@ export class DataStack extends cdk.Stack {
     this.redisSecret = new secretsmanager.Secret(this, 'RedisSecret', {
       secretName: 'mhc/redis-auth',
       generateSecretString: {
+        secretStringTemplate: JSON.stringify({ username: 'default' }),
         generateStringKey: 'password',
         excludePunctuation: true
       }
@@ -54,11 +55,20 @@ export class DataStack extends cdk.Stack {
       credentials: rds.Credentials.fromSecret(this.auroraSecret),
       clusterIdentifier: 'mhc-aurora',
       defaultDatabaseName: 'mhc',
-      scaling: { minCapacity: 0.5, autoPause: true },
+      scaling: { minCapacity: rds.AuroraCapacityUnit.ACU_1, autoPause: cdk.Duration.minutes(5) },
       storageEncryptionKey: this.kmsKey,
       securityGroups: [props.dbSg],
       enableDataApi: true,
       removalPolicy: cdk.RemovalPolicy.SNAPSHOT
+    });
+
+    // Create Redis parameter group for auth
+    const redisParameterGroup = new elasticache.CfnParameterGroup(this, 'RedisParameterGroup', {
+      cacheParameterGroupFamily: 'redis6.x',
+      description: 'Parameter group for Redis with auth',
+      properties: {
+        'requirepass': this.redisSecret.secretValueFromJson('password').toString()
+      }
     });
 
     // ElastiCache Redis Cluster
@@ -71,9 +81,8 @@ export class DataStack extends cdk.Stack {
         description: 'Redis subnet group',
         subnetIds: props.vpc.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS }).subnetIds
       }).ref,
-      authToken: this.redisSecret.secretValue.toString(),
-      transitEncryptionEnabled: true,
-      atRestEncryptionEnabled: true
+      cacheParameterGroupName: redisParameterGroup.ref,
+      transitEncryptionEnabled: true
     });
   }
 }

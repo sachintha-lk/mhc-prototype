@@ -4,6 +4,7 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as certificatemanager from 'aws-cdk-lib/aws-certificatemanager';
+import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 
 export class FrontendHostingStack extends cdk.Stack {
   public readonly siteBucket: s3.Bucket;
@@ -29,7 +30,7 @@ export class FrontendHostingStack extends cdk.Stack {
     this.distribution = new cloudfront.Distribution(this, 'MhcWebDistribution', {
       defaultRootObject: 'index.html',
       defaultBehavior: {
-        origin: new cloudfront.origins.S3Origin(this.siteBucket),
+        origin: new origins.S3StaticWebsiteOrigin(this.siteBucket),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS
       },
       domainNames: ['your-domain.com'], // Replace with your domain

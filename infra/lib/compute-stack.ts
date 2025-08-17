@@ -9,6 +9,7 @@ import * as sns from 'aws-cdk-lib/aws-sns';
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as waf from 'aws-cdk-lib/aws-wafv2';
 import * as budgets from 'aws-cdk-lib/aws-budgets';
+import { SnsAction } from 'aws-cdk-lib/aws-cloudwatch-actions';
 
 interface ComputeStackProps extends cdk.StackProps {
   network: NetworkStack;
@@ -78,12 +79,12 @@ export class ComputeStack extends cdk.Stack {
 
     const alarmTopic = new sns.Topic(this, 'AlarmTopic');
 
-    new cloudwatch.Alarm(this, 'ChatLambdaErrorAlarm', {
+    const chatLambdaErrorAlarm = new cloudwatch.Alarm(this, 'ChatLambdaErrorAlarm', {
       metric: chatLambda.metricErrors(),
       threshold: 1,
-      evaluationPeriods: 1,
-      alarmActions: [alarmTopic.topicArn]
+      evaluationPeriods: 1
     });
+    chatLambdaErrorAlarm.addAlarmAction(new SnsAction(alarmTopic));
 
     const webAcl = new waf.CfnWebACL(this, 'MhcWebACL', {
       scope: 'REGIONAL',
